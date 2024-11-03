@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "Infrastru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{12F2DF99-8042-4A74-B3A9-378320666D75}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechChallenge.Tests", "TechChallenge.Tests\TechChallenge.Tests.csproj", "{3B1BFA69-3B9C-4C3C-8365-681A7E851294}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{12F2DF99-8042-4A74-B3A9-378320666D75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12F2DF99-8042-4A74-B3A9-378320666D75}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{12F2DF99-8042-4A74-B3A9-378320666D75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B1BFA69-3B9C-4C3C-8365-681A7E851294}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B1BFA69-3B9C-4C3C-8365-681A7E851294}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B1BFA69-3B9C-4C3C-8365-681A7E851294}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B1BFA69-3B9C-4C3C-8365-681A7E851294}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

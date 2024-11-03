@@ -1,15 +1,15 @@
 ﻿using Core.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System;
 
 namespace Infrastructure.Repository
 {
     public class AppDbContext : DbContext
     {
-
         private readonly string _connectionString;
 
-        //ctor pra migration nn dar pau, vai pegar a connection string direto do appsettings 
+        // Pegando do  appsettings.json
         public AppDbContext()
         {
             IConfiguration configuration = new ConfigurationBuilder()
@@ -25,22 +25,24 @@ namespace Infrastructure.Repository
             _connectionString = connectionString;
         }
 
-        //Especificando o bando de dados
+        // Construtor para permitir o uso de DbContextOptions (necessário para testes com banco de dados em memória)
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        {
+        }
+
+        // Especificando o banco de dados
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
+            if (!optionsBuilder.IsConfigured && !string.IsNullOrEmpty(_connectionString))
                 optionsBuilder.UseSqlServer(_connectionString);
         }
 
-        //Mapear as entidades
+        // Mapear as entidades
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //Entidades mapeadas no Configurations
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
 
         public DbSet<ContatoModel> Contato { get; set; }
-        public DbSet<MunicipioModel> Municipio { get; set; }
-
     }
 }

@@ -48,25 +48,93 @@ namespace Infrastructure.Repository
             #endregion
         }
 
+        public async Task<IEnumerable<ContatoModel>> GetContatosByDdd(List<int> dddList)
+        {
+            var query = @"
+                SELECT 
+                    CTT_ID AS Id,
+                    CTT_DTCRIACAO AS DataCriacao,
+                    CTT_NOME AS ContatoNome,
+                    CTT_EMAIL AS ContatoEmail,
+                    CTT_DDD AS ContatoDDD,
+                    CTT_NUMERO AS ContatoNumero
+                FROM CONTATO_CTT (NOLOCK) 
+                WHERE CTT_DDD IN @DddList";
+
+            using (var connection = _context.Database.GetDbConnection())
+            {
+                return await connection.QueryAsync<ContatoModel>(query, new { DddList = dddList });
+            }
+        }
+
+
         public async Task<bool> CadastrarContatoAsync(ContatoModel contato, string cep)
         {
+            // Validações
+            ContatoValidator.ValidateCep(ref cep);
+            ContatoValidator.ValidateEmail(contato.ContatoEmail);
+            ContatoValidator.ValidatePhoneNumber(contato.ContatoNumero);
 
-            //Formatando o CEP
-            cep = cep.Replace("-", "");
-
-            //Validar o email
-            if (!IsValidEmail(contato.ContatoEmail))
+            try
             {
-                throw new Exception("Email Inválido");
-            }
+                // Achar o DDD pela região usando o CEP
+                var response = await _httpClient.GetAsync($"{_viaCepUrl}{cep}/json/");
 
-            //Validar número de telefone 
-            if (!contato.ContatoNumero.StartsWith("9"))
+                // Verifica a resposta 
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception($"Falha ao acessar a API ViaCEP: {response.ReasonPhrase}");
+                }
+
+                var responseData = await response.Content.ReadAsStringAsync();
+                var viaCepData = JsonSerializer.Deserialize<ViaCepModel>(responseData);
+
+                if (viaCepData == null || string.IsNullOrEmpty(viaCepData.Ddd))
+                {
+                    throw new Exception("DDD não encontrado para o CEP informado. Verifique se o CEP é válido.");
+                }
+
+                // Configura o DDD do contato
+                contato.ContatoDDD = int.Parse(viaCepData.Ddd);
+
+                // Data de criação
+                contato.DataCriacao = DateTime.Now;
+
+                _context.Contato.Add(contato);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (HttpRequestException)
             {
-                throw new Exception("Número de telefone inválido: o número não pode incluir o DDD e deve começar com '9'.");
+                throw new Exception("Erro de conexão com a API ViaCEP. Verifique sua conexão com a internet.");
             }
+            catch (Exception ex)
+            {
+                throw new Exception($"Erro ao cadastrar contato: {ex.Message}");
+            }
+        }
 
-            //Achar o DDD pela região - Usando o Id IBGE como parametro
+
+
+        public async Task<bool> DeleteContatoById(int id)
+        {
+            var query = "DELETE FROM CONTATO_CTT WHERE CTT_ID = @Id";
+
+            using (var connection = _context.Database.GetDbConnection())
+            {
+                var affectedRows = await connection.ExecuteAsync(query, new { Id = id });
+                return affectedRows > 0;
+            }
+        }
+
+        public async Task<bool> UpdateContato(ContatoModel contato, string cep)
+        {
+            // Validações
+            ContatoValidator.ValidateCep(ref cep);
+            ContatoValidator.ValidateEmail(contato.ContatoEmail);
+            ContatoValidator.ValidatePhoneNumber(contato.ContatoNumero);
+
+            // Achar o DDD pela região
             var viacepResponse = await _httpClient.GetStringAsync($"{_viaCepUrl}{cep}/json/");
             var viaCepData = JsonSerializer.Deserialize<ViaCepModel>(viacepResponse);
 
@@ -75,27 +143,24 @@ namespace Infrastructure.Repository
                 throw new Exception("DDD não encontrado para o CEP informado.");
             }
 
-            
-            //Data Criacao sempre getdate
-            contato.DataCriacao = DateTime.Now;
-
-            //Salvar o contato com o DDD
+            // Atualizar o DDD do contato
             contato.ContatoDDD = int.Parse(viaCepData.Ddd);
 
-            _context.Contato.Add(contato);
-            await _context.SaveChangesAsync();
+            // Realizar o update no banco de dados
+            var query = @"
+                UPDATE CONTATO_CTT
+                SET 
+                    CTT_NOME = @ContatoNome,
+                    CTT_EMAIL = @ContatoEmail,
+                    CTT_NUMERO = @ContatoNumero,
+                    CTT_DDD = @ContatoDDD
+                WHERE CTT_ID = @Id";
 
-            return true;
-        }
-
-
-
-
-        //Metodos Auxiliares
-        private bool IsValidEmail(string email)
-        {
-            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
-            return emailRegex.IsMatch(email);
+            using (var connection = _context.Database.GetDbConnection())
+            {
+                var affectedRows = await connection.ExecuteAsync(query, contato);
+                return affectedRows > 0;
+            }
         }
     }
 }
