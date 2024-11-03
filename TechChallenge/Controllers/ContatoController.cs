@@ -18,36 +18,37 @@ namespace TechChallenge.Controllers
             _contatoRepo = contatoRepo;
         }
 
-
         /// <summary>
-        /// Obtém todos os contatos registrados.
+        /// Cadastra um novo contato, puxando o DDD de forma automatica
         /// </summary>
+        /// <param name="=contato">Dados do contato</param>
         /// <remarks>
-        /// Exemplo de resposta:
+        /// Exemplo de request:
         ///
-        ///     [
         ///       {
-        ///         "id": 1,
-        ///         "dataCriacao": "2024-11-02T13:24:12.646667",
         ///         "contatoNome": "Daniel",
         ///         "contatoEmail": "daniel@dd.com",
-        ///         "contatoDDD": 11,
-        ///         "contatoNumero": "939524211"
+        ///         "contatoNumero": "939524211" -Sem o DDD
+        ///         "cep": "09270490"
         ///       }
-        ///     ]
-        ///
+        /// 
         /// </remarks>
-        /// <returns>Lista de contatos</returns>
-        /// <response code="200">Retorna a lista de contatos</response>
-        /// <response code="400">Se ocorrer um erro ao obter os contatos</response>
-
-        [HttpGet("GetAll")]
-        public async Task<IActionResult> GetContatos()
+        /// <returns>Resultado da operação</returns>
+        [HttpPost]
+        public async Task<IActionResult> CadastrarContato([FromBody] ContatoDto contatoRequest)
         {
             try
             {
-                var contatos = await _contatoRepo.GetContatos();
-                return Ok(contatos);
+                //DTO -> Model
+                var contato = new ContatoModel
+                {
+                    ContatoNome = contatoRequest.ContatoNome,
+                    ContatoEmail = contatoRequest.ContatoEmail,
+                    ContatoNumero = contatoRequest.ContatoNumero
+                };
+
+                await _contatoRepo.CadastrarContatoAsync(contato, contatoRequest.Cep);
+                return Ok("Contato cadastrado com sucesso!");
             }
             catch (Exception ex)
             {
@@ -132,43 +133,45 @@ namespace TechChallenge.Controllers
 
 
 
+
         /// <summary>
-        /// Cadastra um novo contato, puxando o DDD de forma automatica
+        /// Obtém todos os contatos registrados.
         /// </summary>
-        /// <param name="=contato">Dados do contato</param>
         /// <remarks>
-        /// Exemplo de request:
+        /// Exemplo de resposta:
         ///
+        ///     [
         ///       {
+        ///         "id": 1,
+        ///         "dataCriacao": "2024-11-02T13:24:12.646667",
         ///         "contatoNome": "Daniel",
         ///         "contatoEmail": "daniel@dd.com",
-        ///         "contatoNumero": "939524211" -Sem o DDD
-        ///         "cep": "09270490"
+        ///         "contatoDDD": 11,
+        ///         "contatoNumero": "939524211"
         ///       }
-        /// 
+        ///     ]
+        ///
         /// </remarks>
-        /// <returns>Resultado da operação</returns>
-        [HttpPost]
-        public async Task<IActionResult> CadastrarContato([FromBody] ContatoDto contatoRequest)
+        /// <returns>Lista de contatos</returns>
+        /// <response code="200">Retorna a lista de contatos</response>
+        /// <response code="400">Se ocorrer um erro ao obter os contatos</response>
+
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetContatos()
         {
             try
             {
-                //DTO -> Model
-                var contato = new ContatoModel
-                {
-                    ContatoNome = contatoRequest.ContatoNome,
-                    ContatoEmail = contatoRequest.ContatoEmail,
-                    ContatoNumero = contatoRequest.ContatoNumero
-                };
-
-                await _contatoRepo.CadastrarContatoAsync(contato, contatoRequest.Cep);
-                return Ok("Contato cadastrado com sucesso!");
+                var contatos = await _contatoRepo.GetContatos();
+                return Ok(contatos);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
+        
+       
 
         /// <summary>
         /// Deleta um contato pelo Id.

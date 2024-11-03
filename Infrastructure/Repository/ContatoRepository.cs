@@ -24,50 +24,6 @@ namespace Infrastructure.Repository
             _viaCepUrl = configuration["ApiSettings:ViaCepUrl"];
         }
 
-        public async Task<IEnumerable<ContatoModel>> GetContatos()
-        {
-            #region Dapper
-            /*var query = @"
-                SELECT 
-                    CTT_ID AS Id,
-                    CTT_DTCRIACAO AS DataCriacao,
-                    CTT_NOME AS ContatoNome,
-                    CTT_EMAIL AS ContatoEmail,
-                    CTT_DDD AS ContatoDDD,
-                    CTT_NUMERO AS ContatoNumero
-                FROM CONTATO_CTT (NOLOCK)";
-
-            using (var connection = _context.Database.GetDbConnection())
-            {
-                return await connection.QueryAsync<ContatoModel>(query);
-            }*/
-            #endregion
-
-            #region EF Core
-            return await _context.Contato.ToListAsync();
-            #endregion
-        }
-
-        public async Task<IEnumerable<ContatoModel>> GetContatosByDdd(List<int> dddList)
-        {
-            var query = @"
-                SELECT 
-                    CTT_ID AS Id,
-                    CTT_DTCRIACAO AS DataCriacao,
-                    CTT_NOME AS ContatoNome,
-                    CTT_EMAIL AS ContatoEmail,
-                    CTT_DDD AS ContatoDDD,
-                    CTT_NUMERO AS ContatoNumero
-                FROM CONTATO_CTT (NOLOCK) 
-                WHERE CTT_DDD IN @DddList";
-
-            using (var connection = _context.Database.GetDbConnection())
-            {
-                return await connection.QueryAsync<ContatoModel>(query, new { DddList = dddList });
-            }
-        }
-
-
         public async Task<bool> CadastrarContatoAsync(ContatoModel contato, string cep)
         {
             // Validações
@@ -114,6 +70,52 @@ namespace Infrastructure.Repository
             }
         }
 
+
+        public async Task<IEnumerable<ContatoModel>> GetContatos()
+        {
+            #region Dapper
+            /*var query = @"
+                SELECT 
+                    CTT_ID AS Id,
+                    CTT_DTCRIACAO AS DataCriacao,
+                    CTT_NOME AS ContatoNome,
+                    CTT_EMAIL AS ContatoEmail,
+                    CTT_DDD AS ContatoDDD,
+                    CTT_NUMERO AS ContatoNumero
+                FROM CONTATO_CTT (NOLOCK)";
+
+            using (var connection = _context.Database.GetDbConnection())
+            {
+                return await connection.QueryAsync<ContatoModel>(query);
+            }*/
+            #endregion
+
+            #region EF Core
+            return await _context.Contato.ToListAsync();
+            #endregion
+        }
+
+        public async Task<IEnumerable<ContatoModel>> GetContatosByDdd(List<int> dddList)
+        {
+            var query = @"
+                SELECT 
+                    CTT_ID AS Id,
+                    CTT_DTCRIACAO AS DataCriacao,
+                    CTT_NOME AS ContatoNome,
+                    CTT_EMAIL AS ContatoEmail,
+                    CTT_DDD AS ContatoDDD,
+                    CTT_NUMERO AS ContatoNumero
+                FROM CONTATO_CTT (NOLOCK) 
+                WHERE CTT_DDD IN @DddList";
+
+            using (var connection = _context.Database.GetDbConnection())
+            {
+                return await connection.QueryAsync<ContatoModel>(query, new { DddList = dddList });
+            }
+        }
+
+
+       
 
 
         public async Task<bool> DeleteContatoById(int id)
