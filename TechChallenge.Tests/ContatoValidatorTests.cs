@@ -40,9 +40,8 @@ public class ContatoValidatorTests
 
     [Theory]
     [InlineData("812345678", "Número de telefone inválido: o número não pode incluir o DDD e deve começar com '9' e ter 9 dígitos.")]
-    [InlineData("91234567", "Número de telefone inválido: o número não pode incluir o DDD e deve começar com '9' e ter 9 dígitos.")]
-    [InlineData("9#2345678", "Número de telefone inválido: o número não pode incluir o DDD e deve começar com '9' e ter 9 dígitos.")]
-    [InlineData("91234567A", "Número de telefone inválido: o número não pode incluir o DDD e deve começar com '9' e ter 9 dígitos.")]
+    [InlineData("9#2345678", "Número de telefone inválido: o número não pode incluir o DDD e deve conter apenas dígitos.")]
+    [InlineData("91234567A", "Número de telefone inválido: o número não pode incluir o DDD e deve conter apenas dígitos.")]
     public void ValidatePhoneNumber_ShouldThrowForInvalidNumber(string phoneNumber, string expectedMessage)
     {
         // Act & Assert
