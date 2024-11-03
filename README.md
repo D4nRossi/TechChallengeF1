@@ -92,4 +92,4 @@ dotnet test
 
 Este projeto foi desenvolvido com foco em boas práticas de código, incluindo separação de camadas, testes unitários, e validações rigorosas para garantir dados consistentes. O uso de uma API externa para definir o DDD automaticamente adiciona valor ao sistema, proporcionando uma experiência automatizada para o usuário final.
 
-Agradecemos por conferir o projeto!
+Agradeço por conferir o projeto!
