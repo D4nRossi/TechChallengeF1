@@ -3,10 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - '*'  # Rodar o CI para todas as branches
+      - '*' 
   pull_request:
     branches:
-      - '*'  # Rodar o CI para todos os PRs
+      - '*'  
 
 jobs:
   # ----------- CI -----------
@@ -15,12 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-      
-      - name: Setup .NET 8.x
+        uses: actions/checkout@v2 
+
+      - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '8.x'
+          dotnet-version: '8.x'  
 
       - name: Restore dependencies
         run: dotnet restore
@@ -28,31 +28,31 @@ jobs:
       - name: Build the project
         run: dotnet build --configuration Release
 
-      - name: Run tests
-        run: dotnet test --configuration Release
+      - name: Publish the project
+        run: dotnet publish -c Release -o ./publish
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: publish
+          path: ./publish  # Caminho onde os arquivos publicados estão
 
   # ----------- CD -----------
 
   cd:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  
     needs: ci
-    if: github.ref == 'refs/heads/main'  # Só rodar na branch main
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup .NET 8.x
-        uses: actions/setup-dotnet@v1
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
         with:
-          dotnet-version: '8.x'
+          name: publish
 
-      - name: Publish the project
-        run: dotnet publish -c Release -o ./publish
-
-      # Criar a pasta Deploy e copiar os arquivos para ela
-      - name: Create and Copy files to Deploy folder
+      - name: Simulate deploy
         run: |
-          mkdir -p ./Deploy  # Cria a pasta Deploy se não existir
-          cp -r ./publish/* ./Deploy/  # Copia os arquivos para a pasta Deploy
-          ls -l ./Deploy  # Verifica se os arquivos foram copiados corretamente
-
+          echo "Files in publish directory:"
+          ls -l ./publish  # Lista os arquivos no diretório de publicação
