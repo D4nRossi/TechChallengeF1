@@ -1,0 +1,44 @@
+stages:
+  - build
+  - test
+  - deploy
+
+# -----------  CI: Todas as branches -----------
+
+ci_pipeline:
+  stage: build
+  script:
+    - echo "Building the project..."
+    - dotnet build
+  only:
+    - branches  
+
+# Testes em todas as branches
+ci_test:
+  stage: test
+  script:
+    - echo "Running tests..."
+    - dotnet test
+  only:
+    - branches  
+
+# -----------  CD: Somente na main -----------
+
+cd_pipeline:
+  stage: deploy
+  script:
+    - echo "Deploying to production..."
+    - dotnet publish -c Release -o ./publish
+    - scp -r ./publish user@production-server:/path/to/deploy
+  only:
+    - main  # Somente na branch 'main'
+
+
+staging_deploy:
+  stage: deploy
+  script:
+    - echo "Deploying to staging..."
+    - dotnet publish -c Release -o ./publish
+    - scp -r ./publish user@staging-server:/path/to/deploy
+  only:
+    - staging  # Somente na branch 'staging'
