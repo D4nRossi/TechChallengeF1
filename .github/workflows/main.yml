@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - '*'  # Trigger para todas as branches
+      - '*'  # Trigger para todas as branchess
   pull_request:
     branches:
       - '*'  # Trigger para todas as branches
