@@ -3,10 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - '*'  # CI para todas as branches
+      - '*'  # Rodar o CI para todas as branches
   pull_request:
     branches:
-      - '*'  # CI para todos os PRs
+      - '*'  # Rodar o CI para todos os PRs
 
 jobs:
   # ----------- CI -----------
@@ -36,7 +36,7 @@ jobs:
   cd:
     runs-on: ubuntu-latest
     needs: ci
-    if: github.ref == 'refs/heads/main'  # Só roda na branch main
+    if: github.ref == 'refs/heads/main'  # Só rodar na branch main
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -49,9 +49,10 @@ jobs:
       - name: Publish the project
         run: dotnet publish -c Release -o ./publish
 
-      - name: Copy files to deploy folder
+      # Criar a pasta Deploy e copiar os arquivos para ela
+      - name: Create and Copy files to Deploy folder
         run: |
-          cp -r ./publish/* ./Deploy/  # Copia os arquivos para a pasta 'Deploy'
+          mkdir -p ./Deploy  # Cria a pasta Deploy se não existir
+          cp -r ./publish/* ./Deploy/  # Copia os arquivos para a pasta Deploy
+          ls -l ./Deploy  # Verifica se os arquivos foram copiados corretamente
 
-      - name: List files in deploy folder
-        run: ls ./Deploy  # Verifica os arquivos copiados
