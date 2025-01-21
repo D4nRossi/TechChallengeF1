@@ -2,19 +2,22 @@ using Core.IRepository;
 using Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Instanciando o appsettings
+// Metricas do Prometheus
+var requestCounter = Metrics.CreateCounter("api_requests_total", "Total de requisições recebidas pela API");
+
+
+// Instanciando o appsettings
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .Build();
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
-
-//Documentacao Swagger
 builder.Services.AddSwaggerGen(options =>
 {
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -22,8 +25,7 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(xmlPath);
 });
 
-
-//Serializacao 
+// Serialização
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -31,19 +33,19 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });
 
-//Banco
+// Banco de dados
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(configuration.GetConnectionString("DB_CONNECTION"));
 }, ServiceLifetime.Scoped);
 
-//Metodos
+// Métodos
 builder.Services.AddScoped<IContato, ContatoRepository>();
 builder.Services.AddHttpClient<IContato, ContatoRepository>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure o pipeline de requisições HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -51,6 +53,21 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Middleware do Prometheus
+app.Use(async (context, next) =>
+{
+    requestCounter.Inc(); // Incrementa o contador de requisições
+    await next.Invoke();  // Continua o processamento da requisição
+});
+
+
+// Expondo as métricas para o Prometheus
+app.UseRouting();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapMetrics();  // Mapeia as métricas para a rota /metrics
+});
 
 app.UseAuthorization();
 
