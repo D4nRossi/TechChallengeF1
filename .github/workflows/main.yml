@@ -49,14 +49,9 @@ jobs:
       - name: Publish the project
         run: dotnet publish -c Release -o ./publish
 
-      - name: Create deploy folder
-        run: |
-          mkdir -p ./deploy_folder
-          ls ./deploy_folder  # Verifica a criação
-
       - name: Copy files to deploy folder
         run: |
-          cp -r ./publish/* ./deploy_folder/
+          cp -r ./publish/* ./Deploy/  # Copia os arquivos para a pasta 'Deploy'
 
       - name: List files in deploy folder
-        run: ls ./deploy_folder  # Verifica os arquivos copiados
+        run: ls ./Deploy  # Verifica os arquivos copiados
